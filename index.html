@@ -3,117 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Operaciones - Tiempo Real</title>
+    <title>Sistema de Operaciones y Diagnóstico</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen">
-    <nav class="border-b border-slate-800 bg-slate-950/50 backdrop-blur p-4 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Barra de Navegación -->
+    <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-                <h1 class="text-xl font-black text-white">Centro Operativo</h1>
+                <div class="w-3 h-3 rounded-full bg-teal-400 animate-ping"></div>
+                <span class="font-black text-lg tracking-wide text-white">LAB CONTROL</span>
             </div>
-            <div id="status-conexion" class="text-xs font-mono text-emerald-400 bg-emerald-950/50 border border-emerald-800 px-3 py-1 rounded-full">
-                Realtime Activo
+
+            <!-- Selector de Vistas -->
+            <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-sm font-semibold">
+                <button id="tab-form" onclick="cambiarVista('form')" class="px-4 py-1.5 rounded-lg bg-teal-500 text-slate-950 shadow">
+                    <i class="fas fa-plus-circle mr-1.5"></i> Carga Operativa
+                </button>
+                <button id="tab-analytics" onclick="cambiarVista('analytics')" class="px-4 py-1.5 rounded-lg text-slate-400 hover:text-white">
+                    <i class="fas fa-chart-pie mr-1.5"></i> Tablero Ejecutivo
+                </button>
+                <button id="tab-records" onclick="cambiarVista('records')" class="px-4 py-1.5 rounded-lg text-slate-400 hover:text-white">
+                    <i class="fas fa-table mr-1.5"></i> Registros y Gestión
+                </button>
+            </div>
+
+            <div class="text-xs font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-800/60 px-3 py-1 rounded-full flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Supabase Realtime
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Formulario de Carga -->
-        <section class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6 h-fit">
-            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <i class="fas fa-plus-circle text-teal-400"></i> Registrar Tarea
-            </h2>
+    <!-- Contenedor Principal -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6 flex-1 w-full">
+
+        <!-- VISTA 1: CARGA DE TAREAS -->
+        <section id="view-form" class="max-w-xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-clipboard-list text-teal-400"></i> Registrar Bloque de Trabajo
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Carga rápida para técnicos en estación o móvil.</p>
+            </div>
+
             <form id="task-form" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Técnico</label>
-                    <select id="tecnico" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500 font-medium">
-                        <option value="">Seleccionar empleado...</option>
-                        <option value="Sebastián">Sebastián</option>
-                        <option value="Martín">Martín</option>
-                        <option value="Lucía">Lucía</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Tipo de Tarea</label>
-                    <select id="tarea" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500 font-medium">
-                        <option value="Diseño">Diseño</option>
-                        <option value="Administrativa">Administrativa</option>
-                        <option value="Coordinación Odontólogos">Coordinación Odontólogos</option>
-                        <option value="Producción">Producción</option>
-                        <option value="Otra">Otra</option>
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Ingreso</label>
-                        <input type="time" id="hora-ingreso" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500">
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Técnico Responsable</label>
+                        <select id="tecnico" required class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none">
+                            <option value="">Seleccionar empleado...</option>
+                            <option value="Sebastián">Sebastián</option>
+                            <option value="Martín">Martín</option>
+                            <option value="Lucía">Lucía</option>
+                        </select>
                     </div>
+
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Salida</label>
-                        <input type="time" id="hora-salida" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500">
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Sector</label>
+                        <select id="sector" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none">
+                            <option value="Digital">Digital / CAD-CAM</option>
+                            <option value="Analógico">Analógico / Yeso</option>
+                            <option value="Terminación">Terminación / Cerámica</option>
+                            <option value="Administración">Administración</option>
+                        </select>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">¿Orden Completa?</label>
-                    <select id="orden-completa" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500 font-medium">
-                        <option value="true">Sí (Sin fricción)</option>
-                        <option value="false">No (Requirió re-contacto)</option>
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Tipo de Tarea</label>
+                        <select id="tarea" required class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none">
+                            <option value="Diseño">Diseño CAD</option>
+                            <option value="Fresado / Impresión">Fresado / Impresión 3D</option>
+                            <option value="Coordinación Odontólogos">Coordinación Odontólogos</option>
+                            <option value="Administrativa">Administrativa / Facturación</option>
+                            <option value="Montaje / Cerámica">Montaje / Cerámica</option>
+                            <option value="Otra">Otra tarea</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Cliente / Odontólogo</label>
+                        <input type="text" id="cliente" placeholder="Ej: Dr. Pérez / Caso #104" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 bg-slate-950/70 p-3 rounded-xl border border-slate-800">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Inicio</label>
+                        <input type="time" id="hora-ingreso" required onchange="actualizarDuracion()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Fin</label>
+                        <input type="time" id="hora-salida" required onchange="actualizarDuracion()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Duración (Min)</label>
+                        <input type="number" id="tiempo-minutos" min="1" required class="w-full bg-slate-900 border border-teal-500/50 text-teal-300 font-bold rounded-lg p-2 text-sm outline-none">
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <label class="block text-xs font-bold uppercase text-slate-400">Estado de la Orden</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-2 p-3 bg-slate-900 rounded-lg border border-slate-700 cursor-pointer text-sm">
+                            <input type="radio" name="orden_completa" value="true" checked onchange="toggleMotivoFriccion(false)" class="text-teal-500">
+                            <span>Completa (Fluida)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 bg-slate-900 rounded-lg border border-slate-700 cursor-pointer text-sm">
+                            <input type="radio" name="orden_completa" value="false" onchange="toggleMotivoFriccion(true)" class="text-rose-500">
+                            <span class="text-rose-300">Incompleta (Fricción)</span>
+                        </label>
+                    </div>
+
+                    <div id="box-motivo-friccion" class="hidden">
+                        <label class="block text-xs font-bold uppercase text-rose-400 mb-1">Motivo de la Fricción</label>
+                        <select id="motivo-friccion" class="w-full bg-slate-900 border border-rose-900 rounded-xl p-3 text-white text-sm outline-none">
+                            <option value="Falta color / foto">Falta color o foto</option>
+                            <option value="Escaneo borroso / Defectuoso">Escaneo borroso / Defectuoso</option>
+                            <option value="Indicación clínica ambigua">Indicación clínica ambigua</option>
+                            <option value="Cambio de plan sobre la marcha">Cambio de plan sobre la marcha</option>
+                            <option value="Otro">Otro motivo</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Notas / Detalle</label>
-                    <input type="text" id="notas" placeholder="Ej: Falta color, escaneo borroso..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500">
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Observaciones Adicionales</label>
+                    <textarea id="notas" rows="2" placeholder="Detalles del caso, vía de contacto o incidencias..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm outline-none focus:border-teal-400"></textarea>
                 </div>
 
-                <button type="submit" id="btn-guardar" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black py-3 rounded-xl transition duration-150 shadow-lg shadow-teal-500/20">
-                    Guardar Tarea
+                <button type="submit" id="btn-guardar" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black py-3.5 rounded-xl transition duration-150 shadow-lg shadow-teal-500/20 text-base">
+                    Guardar Registro
                 </button>
             </form>
         </section>
 
-        <!-- Métricas y Tabla en Vivo -->
-        <section class="lg:col-span-2 space-y-6">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
-                    <span class="text-xs font-bold text-slate-400 uppercase">Tiempo Total</span>
+        <!-- VISTA 2: ANALÍTICAS Y DIAGNÓSTICO -->
+        <section id="view-analytics" class="hidden space-y-6">
+            <!-- KPIs Superiores -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Horas Productivas</span>
                     <p id="kpi-horas" class="text-3xl font-black text-white mt-1">0.0 h</p>
+                    <span class="text-xs text-slate-500">Tiempo total registrado</span>
                 </div>
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
-                    <span class="text-xs font-bold text-slate-400 uppercase">Fricción (Incompletas)</span>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Índice de Fricción</span>
                     <p id="kpi-friccion" class="text-3xl font-black text-rose-400 mt-1">0%</p>
+                    <span class="text-xs text-rose-500/80">Órdenes con demoras</span>
                 </div>
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
-                    <span class="text-xs font-bold text-slate-400 uppercase">Total Registros</span>
-                    <p id="kpi-total" class="text-3xl font-black text-teal-400 mt-1">0</p>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tiempo Perdido</span>
+                    <p id="kpi-tiempo-perdido" class="text-3xl font-black text-amber-400 mt-1">0.0 h</p>
+                    <span class="text-xs text-amber-500/80">Dedicado a trabas/recontactos</span>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Promedio por Tarea</span>
+                    <p id="kpi-promedio" class="text-3xl font-black text-teal-400 mt-1">0 min</p>
+                    <span class="text-xs text-teal-500/80">Duración media por bloque</span>
                 </div>
             </div>
 
-            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl overflow-hidden shadow-xl">
-                <div class="p-4 border-b border-slate-700/60 flex justify-between items-center">
-                    <h3 class="font-bold text-white">Actividad en Directo</h3>
-                    <span class="text-xs font-mono text-slate-400">Actualizado vía WebSockets</span>
+            <!-- Gráficos y Tablas de Rendimiento -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Rendimiento por Técnico -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow">
+                    <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fas fa-users text-teal-400"></i> Rendimiento por Empleado
+                    </h3>
+                    <div id="analisis-tecnicos" class="space-y-4">
+                        <!-- Generado por JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Distribución por Tarea -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow">
+                    <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fas fa-pie-chart text-teal-400"></i> Carga Horaria por Tarea
+                    </h3>
+                    <div id="analisis-tareas" class="space-y-3">
+                        <!-- Generado por JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 3: REGISTROS DETALLADOS Y BORRADO -->
+        <section id="view-records" class="hidden space-y-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+                <div class="p-4 border-b border-slate-800 flex flex-wrap justify-between items-center gap-3">
+                    <div>
+                        <h3 class="font-bold text-white">Historial de Tareas en Directo</h3>
+                        <p class="text-xs text-slate-400">Hacé clic en el tacho rojo para borrar registros de prueba.</p>
+                    </div>
+                    <button onclick="cargarDatos()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg text-slate-300">
+                        <i class="fas fa-sync-alt mr-1"></i> Refrescar
+                    </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-900/60 text-xs uppercase font-bold text-slate-400 border-b border-slate-700/60">
+                        <thead class="bg-slate-950 text-xs uppercase font-bold text-slate-400 border-b border-slate-800">
                             <tr>
                                 <th class="p-4">Técnico</th>
-                                <th class="p-4">Tarea</th>
+                                <th class="p-4">Sector / Tarea</th>
+                                <th class="p-4">Cliente / Caso</th>
                                 <th class="p-4 text-center">Horario</th>
-                                <th class="p-4 text-center">Minutos</th>
-                                <th class="p-4 text-center">Estado Orden</th>
-                                <th class="p-4">Notas</th>
+                                <th class="p-4 text-center">Duración</th>
+                                <th class="p-4 text-center">Estado</th>
+                                <th class="p-4">Detalles</th>
+                                <th class="p-4 text-center">Acción</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-cuerpo" class="divide-y divide-slate-700/40"></tbody>
+                        <tbody id="tabla-cuerpo" class="divide-y border-slate-800"></tbody>
                     </table>
                 </div>
             </div>
@@ -127,11 +232,42 @@
 
         let tareasLocales = [];
 
-        function calcularMinutos(ingreso, salida) {
-            const [h1, m1] = ingreso.split(':').map(Number);
-            const [h2, m2] = salida.split(':').map(Number);
-            let total = (h2 * 60 + m2) - (h1 * 60 + m1);
-            return total > 0 ? total : 0;
+        function cambiarVista(vista) {
+            document.getElementById('view-form').classList.add('hidden');
+            document.getElementById('view-analytics').classList.add('hidden');
+            document.getElementById('view-records').classList.add('hidden');
+
+            document.getElementById('tab-form').className = 'px-4 py-1.5 rounded-lg text-slate-400 hover:text-white';
+            document.getElementById('tab-analytics').className = 'px-4 py-1.5 rounded-lg text-slate-400 hover:text-white';
+            document.getElementById('tab-records').className = 'px-4 py-1.5 rounded-lg text-slate-400 hover:text-white';
+
+            if (vista === 'form') {
+                document.getElementById('view-form').classList.remove('hidden');
+                document.getElementById('tab-form').className = 'px-4 py-1.5 rounded-lg bg-teal-500 text-slate-950 shadow';
+            } else if (vista === 'analytics') {
+                document.getElementById('view-analytics').classList.remove('hidden');
+                document.getElementById('tab-analytics').className = 'px-4 py-1.5 rounded-lg bg-teal-500 text-slate-950 shadow';
+            } else if (vista === 'records') {
+                document.getElementById('view-records').classList.remove('hidden');
+                document.getElementById('tab-records').className = 'px-4 py-1.5 rounded-lg bg-teal-500 text-slate-950 shadow';
+            }
+        }
+
+        function toggleMotivoFriccion(mostrar) {
+            const box = document.getElementById('box-motivo-friccion');
+            box.classList.toggle('hidden', !mostrar);
+        }
+
+        function actualizarDuracion() {
+            const hIngreso = document.getElementById('hora-ingreso').value;
+            const hSalida = document.getElementById('hora-salida').value;
+            if (hIngreso && hSalida) {
+                const [h1, m1] = hIngreso.split(':').map(Number);
+                const [h2, m2] = hSalida.split(':').map(Number);
+                let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+                if (diff < 0) diff += 24 * 60;
+                document.getElementById('tiempo-minutos').value = diff;
+            }
         }
 
         function renderizar() {
@@ -139,41 +275,102 @@
             tbody.innerHTML = '';
 
             let totalMin = 0;
+            let tiempoFriccionMin = 0;
             let incompletas = 0;
 
+            const tecnicosStats = {};
+            const tareasStats = {};
+
             tareasLocales.forEach(t => {
-                const duracion = t.duration_minutes || t.tiempo_minutos || 0;
-                const esCompleta = t.is_complete !== undefined ? t.is_complete : t.orden_completa;
-                const nombreTecnico = t.technician_name || t.tecnico;
-                const tipoTarea = t.task_type || t.tipo_tarea;
-                const hIngreso = t.start_time || t.hora_ingreso;
-                const hSalida = t.end_time || t.hora_salida;
-                const notaTexto = t.notes || t.notas;
+                const duracion = Number(t.duration_minutes) || 0;
+                const esCompleta = t.is_complete !== false;
+                const tec = t.technician_name || 'Desconocido';
+                const tipoTarea = t.task_type || 'General';
 
                 totalMin += duracion;
-                if (!esCompleta) incompletas++;
+                if (!esCompleta) {
+                    incompletas++;
+                    tiempoFriccionMin += duracion;
+                }
+
+                if (!tecnicosStats[tec]) tecnicosStats[tec] = { minutos: 0, tareas: 0, incompletas: 0 };
+                tecnicosStats[tec].minutos += duracion;
+                tecnicosStats[tec].tareas += 1;
+                if (!esCompleta) tecnicosStats[tec].incompletas += 1;
+
+                tareasStats[tipoTarea] = (tareasStats[tipoTarea] || 0) + duracion;
 
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-700/30 transition-colors';
+                tr.className = 'hover:bg-slate-800/40 transition-colors';
                 tr.innerHTML = `
-                    <td class="p-4 font-bold text-white">${nombreTecnico}</td>
-                    <td class="p-4"><span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-700 text-teal-300">${tipoTarea}</span></td>
-                    <td class="p-4 text-center text-slate-400 font-mono text-xs">${hIngreso} - ${hSalida}</td>
+                    <td class="p-4 font-bold text-white">${tec}</td>
+                    <td class="p-4">
+                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-950 border border-slate-800 text-teal-300 font-semibold">${tipoTarea}</span>
+                        <span class="block text-[11px] text-slate-500 mt-1">${t.sector || 'Digital'}</span>
+                    </td>
+                    <td class="p-4 text-slate-300 text-xs">${t.client_name || '-'}</td>
+                    <td class="p-4 text-center text-slate-400 font-mono text-xs">${t.start_time || ''} - ${t.end_time || ''}</td>
                     <td class="p-4 text-center font-bold text-white">${duracion} min</td>
                     <td class="p-4 text-center">
                         ${esCompleta 
-                            ? '<span class="text-xs px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800">Completa</span>' 
-                            : '<span class="text-xs px-2 py-0.5 rounded bg-rose-950/60 text-rose-400 border border-rose-800">Incompleta</span>'}
+                            ? '<span class="text-[11px] px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800">Fluida</span>' 
+                            : '<span class="text-[11px] px-2 py-0.5 rounded bg-rose-950/60 text-rose-400 border border-rose-800">Fricción</span>'}
                     </td>
-                    <td class="p-4 text-slate-400 text-xs max-w-xs truncate">${notaTexto || '-'}</td>
+                    <td class="p-4 text-slate-400 text-xs max-w-xs">
+                        ${t.friction_reason ? `<span class="text-rose-400 font-semibold block">${t.friction_reason}</span>` : ''}
+                        <span>${t.notes || '-'}</span>
+                    </td>
+                    <td class="p-4 text-center">
+                        <button onclick="eliminarTarea(${t.id})" class="text-slate-500 hover:text-rose-400 p-2 rounded-lg hover:bg-slate-800 transition">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
 
             document.getElementById('kpi-horas').textContent = (totalMin / 60).toFixed(1) + ' h';
-            document.getElementById('kpi-total').textContent = tareasLocales.length;
-            const friccion = tareasLocales.length > 0 ? Math.round((incompletas / tareasLocales.length) * 100) : 0;
-            document.getElementById('kpi-friccion').textContent = friccion + '%';
+            document.getElementById('kpi-tiempo-perdido').textContent = (tiempoFriccionMin / 60).toFixed(1) + ' h';
+            const friccionPct = tareasLocales.length > 0 ? Math.round((incompletas / tareasLocales.length) * 100) : 0;
+            document.getElementById('kpi-friccion').textContent = friccionPct + '%';
+            const promMin = tareasLocales.length > 0 ? Math.round(totalMin / tareasLocales.length) : 0;
+            document.getElementById('kpi-promedio').textContent = promMin + ' min';
+
+            const divTecnicos = document.getElementById('analisis-tecnicos');
+            divTecnicos.innerHTML = '';
+            for (const [nombre, stat] of Object.entries(tecnicosStats)) {
+                const horas = (stat.minutos / 60).toFixed(1);
+                const friccTec = stat.tareas > 0 ? Math.round((stat.incompletas / stat.tareas) * 100) : 0;
+                divTecnicos.innerHTML += `
+                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-white">${nombre}</p>
+                            <p class="text-xs text-slate-400">${stat.tareas} tareas cargadas</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-teal-300 text-sm">${horas} h</p>
+                            <p class="text-xs ${friccTec > 30 ? 'text-rose-400 font-semibold' : 'text-slate-400'}">${friccTec}% fricción</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const divTareas = document.getElementById('analisis-tareas');
+            divTareas.innerHTML = '';
+            for (const [tarea, minutos] of Object.entries(tareasStats)) {
+                const pct = totalMin > 0 ? Math.round((minutos / totalMin) * 100) : 0;
+                divTareas.innerHTML += `
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-300">${tarea}</span>
+                            <span class="text-teal-400">${(minutos / 60).toFixed(1)} h (${pct}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
+                            <div class="bg-teal-500 h-full rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         async function cargarDatos() {
@@ -188,33 +385,44 @@
             }
         }
 
+        async function eliminarTarea(id) {
+            if (!confirm('¿Deseas eliminar este registro?')) return;
+            const { error } = await supabaseClient.from('lab_tasks').delete().eq('id', id);
+            if (error) alert('Error al borrar: ' + error.message);
+            else cargarDatos();
+        }
+
         document.getElementById('task-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-guardar');
             btn.disabled = true;
             btn.textContent = 'Guardando...';
 
-            const ingreso = document.getElementById('hora-ingreso').value;
-            const salida = document.getElementById('hora-salida').value;
-            const minutos = calcularMinutos(ingreso, salida);
+            const esCompleta = document.querySelector('input[name="orden_completa"]:checked').value === 'true';
 
             const nuevaTarea = {
                 technician_name: document.getElementById('tecnico').value,
+                sector: document.getElementById('sector').value,
                 task_type: document.getElementById('tarea').value,
-                start_time: ingreso,
-                end_time: salida,
-                duration_minutes: minutos,
-                is_complete: document.getElementById('orden-completa').value === 'true',
+                client_name: document.getElementById('cliente').value,
+                start_time: document.getElementById('hora-ingreso').value,
+                end_time: document.getElementById('hora-salida').value,
+                duration_minutes: parseInt(document.getElementById('tiempo-minutos').value, 10) || 0,
+                is_complete: esCompleta,
+                friction_reason: esCompleta ? null : document.getElementById('motivo-friccion').value,
                 notes: document.getElementById('notas').value
             };
 
             const { error } = await supabaseClient.from('lab_tasks').insert([nuevaTarea]);
 
             btn.disabled = false;
-            btn.textContent = 'Guardar Tarea';
+            btn.textContent = 'Guardar Registro';
 
             if (!error) {
+                document.getElementById('cliente').value = '';
                 document.getElementById('notas').value = '';
+                document.getElementById('tiempo-minutos').value = '';
+                alert('Tarea guardada exitosamente');
             } else {
                 alert('Error al guardar: ' + error.message);
             }
@@ -222,9 +430,8 @@
 
         supabaseClient
             .channel('realtime_lab_tasks')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'lab_tasks' }, payload => {
-                tareasLocales.unshift(payload.new);
-                renderizar();
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'lab_tasks' }, () => {
+                cargarDatos();
             })
             .subscribe();
 
