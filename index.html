@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Operaciones - Tiempo Real</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+    <nav class="border-b border-slate-800 bg-slate-950/50 backdrop-blur p-4 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                <h1 class="text-xl font-black text-white">Centro Operativo</h1>
+            </div>
+            <div id="status-conexion" class="text-xs font-mono text-emerald-400 bg-emerald-950/50 border border-emerald-800 px-3 py-1 rounded-full">
+                Realtime Activo
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Formulario de Carga -->
+        <section class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6 h-fit">
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fas fa-plus-circle text-teal-400"></i> Registrar Tarea
+            </h2>
+            <form id="task-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Técnico</label>
+                    <select id="tecnico" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500 font-medium">
+                        <option value="">Seleccionar empleado...</option>
+                        <option value="Sebastián">Sebastián</option>
+                        <option value="Martín">Martín</option>
+                        <option value="Lucía">Lucía</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Tipo de Tarea</label>
+                    <select id="tarea" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500 font-medium">
+                        <option value="Diseño">Diseño</option>
+                        <option value="Administrativa">Administrativa</option>
+                        <option value="Coordinación Odontólogos">Coordinación Odontólogos</option>
+                        <option value="Producción">Producción</option>
+                        <option value="Otra">Otra</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Ingreso</label>
+                        <input type="time" id="hora-ingreso" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Salida</label>
+                        <input type="time" id="hora-salida" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">¿Orden Completa?</label>
+                    <select id="orden-completa" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500 font-medium">
+                        <option value="true">Sí (Sin fricción)</option>
+                        <option value="false">No (Requirió re-contacto)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Notas / Detalle</label>
+                    <input type="text" id="notas" placeholder="Ej: Falta color, escaneo borroso..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500">
+                </div>
+
+                <button type="submit" id="btn-guardar" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black py-3 rounded-xl transition duration-150 shadow-lg shadow-teal-500/20">
+                    Guardar Tarea
+                </button>
+            </form>
+        </section>
+
+        <!-- Métricas y Tabla en Vivo -->
+        <section class="lg:col-span-2 space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Tiempo Total</span>
+                    <p id="kpi-horas" class="text-3xl font-black text-white mt-1">0.0 h</p>
+                </div>
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Fricción (Incompletas)</span>
+                    <p id="kpi-friccion" class="text-3xl font-black text-rose-400 mt-1">0%</p>
+                </div>
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Total Registros</span>
+                    <p id="kpi-total" class="text-3xl font-black text-teal-400 mt-1">0</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl overflow-hidden shadow-xl">
+                <div class="p-4 border-b border-slate-700/60 flex justify-between items-center">
+                    <h3 class="font-bold text-white">Actividad en Directo</h3>
+                    <span class="text-xs font-mono text-slate-400">Actualizado vía WebSockets</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-900/60 text-xs uppercase font-bold text-slate-400 border-b border-slate-700/60">
+                            <tr>
+                                <th class="p-4">Técnico</th>
+                                <th class="p-4">Tarea</th>
+                                <th class="p-4 text-center">Horario</th>
+                                <th class="p-4 text-center">Minutos</th>
+                                <th class="p-4 text-center">Estado Orden</th>
+                                <th class="p-4">Notas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-cuerpo" class="divide-y divide-slate-700/40"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const SUPABASE_URL = 'https://tklocrvvnpuftrhllopg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrbG9jcnZ2bnB1ZnRyaGxsb3BnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMjE2NTcsImV4cCI6MjEwMjg5NzY1N30.HGZzc3kMaZiBV7tewzDJAYT0hPHI6IUJsEP3W_WJqTk';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let tareasLocales = [];
+
+        function calcularMinutos(ingreso, salida) {
+            const [h1, m1] = ingreso.split(':').map(Number);
+            const [h2, m2] = salida.split(':').map(Number);
+            let total = (h2 * 60 + m2) - (h1 * 60 + m1);
+            return total > 0 ? total : 0;
+        }
+
+        function renderizar() {
+            const tbody = document.getElementById('tabla-cuerpo');
+            tbody.innerHTML = '';
+
+            let totalMin = 0;
+            let incompletas = 0;
+
+            tareasLocales.forEach(t => {
+                const duracion = t.duration_minutes || t.tiempo_minutos || 0;
+                const esCompleta = t.is_complete !== undefined ? t.is_complete : t.orden_completa;
+                const nombreTecnico = t.technician_name || t.tecnico;
+                const tipoTarea = t.task_type || t.tipo_tarea;
+                const hIngreso = t.start_time || t.hora_ingreso;
+                const hSalida = t.end_time || t.hora_salida;
+                const notaTexto = t.notes || t.notas;
+
+                totalMin += duracion;
+                if (!esCompleta) incompletas++;
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-700/30 transition-colors';
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-white">${nombreTecnico}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-700 text-teal-300">${tipoTarea}</span></td>
+                    <td class="p-4 text-center text-slate-400 font-mono text-xs">${hIngreso} - ${hSalida}</td>
+                    <td class="p-4 text-center font-bold text-white">${duracion} min</td>
+                    <td class="p-4 text-center">
+                        ${esCompleta 
+                            ? '<span class="text-xs px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800">Completa</span>' 
+                            : '<span class="text-xs px-2 py-0.5 rounded bg-rose-950/60 text-rose-400 border border-rose-800">Incompleta</span>'}
+                    </td>
+                    <td class="p-4 text-slate-400 text-xs max-w-xs truncate">${notaTexto || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('kpi-horas').textContent = (totalMin / 60).toFixed(1) + ' h';
+            document.getElementById('kpi-total').textContent = tareasLocales.length;
+            const friccion = tareasLocales.length > 0 ? Math.round((incompletas / tareasLocales.length) * 100) : 0;
+            document.getElementById('kpi-friccion').textContent = friccion + '%';
+        }
+
+        async function cargarDatos() {
+            const { data, error } = await supabaseClient
+                .from('lab_tasks')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (!error && data) {
+                tareasLocales = data;
+                renderizar();
+            }
+        }
+
+        document.getElementById('task-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-guardar');
+            btn.disabled = true;
+            btn.textContent = 'Guardando...';
+
+            const ingreso = document.getElementById('hora-ingreso').value;
+            const salida = document.getElementById('hora-salida').value;
+            const minutos = calcularMinutos(ingreso, salida);
+
+            const nuevaTarea = {
+                technician_name: document.getElementById('tecnico').value,
+                task_type: document.getElementById('tarea').value,
+                start_time: ingreso,
+                end_time: salida,
+                duration_minutes: minutos,
+                is_complete: document.getElementById('orden-completa').value === 'true',
+                notes: document.getElementById('notas').value
+            };
+
+            const { error } = await supabaseClient.from('lab_tasks').insert([nuevaTarea]);
+
+            btn.disabled = false;
+            btn.textContent = 'Guardar Tarea';
+
+            if (!error) {
+                document.getElementById('notas').value = '';
+            } else {
+                alert('Error al guardar: ' + error.message);
+            }
+        });
+
+        supabaseClient
+            .channel('realtime_lab_tasks')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'lab_tasks' }, payload => {
+                tareasLocales.unshift(payload.new);
+                renderizar();
+            })
+            .subscribe();
+
+        cargarDatos();
+    </script>
+</body>
+</html>
