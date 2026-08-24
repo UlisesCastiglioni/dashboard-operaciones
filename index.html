@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Operaciones y Diagnóstico</title>
+    <title>Centro de Registro Operativo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,49 +11,76 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 
     <!-- Barra de Navegación -->
-    <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50 px-4 py-3">
+    <nav class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-4 py-3">
         <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-3 h-3 rounded-full bg-teal-400 animate-ping"></div>
-                <span class="font-black text-lg tracking-wide text-white">LAB CONTROL</span>
+                <div class="w-3 h-3 rounded-full bg-teal-400 animate-pulse"></div>
+                <span class="font-black text-lg tracking-wide text-white">PANEL OPERATIVO</span>
             </div>
 
             <!-- Selector de Vistas -->
             <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-sm font-semibold">
                 <button id="tab-form" onclick="cambiarVista('form')" class="px-4 py-1.5 rounded-lg bg-teal-500 text-slate-950 shadow">
-                    <i class="fas fa-plus-circle mr-1.5"></i> Carga Operativa
+                    <i class="fas fa-plus-circle mr-1.5"></i> Carga de Tareas
                 </button>
-                <button id="tab-analytics" onclick="cambiarVista('analytics')" class="px-4 py-1.5 rounded-lg text-slate-400 hover:text-white">
-                    <i class="fas fa-chart-pie mr-1.5"></i> Tablero Ejecutivo
+                <button id="tab-analytics" onclick="intentarAccesoAdmin('analytics')" class="px-4 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5">
+                    <i id="lock-analytics" class="fas fa-lock text-xs text-amber-400"></i>
+                    <span>Analíticas</span>
                 </button>
-                <button id="tab-records" onclick="cambiarVista('records')" class="px-4 py-1.5 rounded-lg text-slate-400 hover:text-white">
-                    <i class="fas fa-table mr-1.5"></i> Registros y Gestión
+                <button id="tab-records" onclick="intentarAccesoAdmin('records')" class="px-4 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5">
+                    <i id="lock-records" class="fas fa-lock text-xs text-amber-400"></i>
+                    <span>Registros</span>
                 </button>
             </div>
 
-            <div class="text-xs font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-800/60 px-3 py-1 rounded-full flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Supabase Realtime
+            <div class="flex items-center gap-2">
+                <button id="btn-admin-logout" onclick="cerrarSesionAdmin()" class="hidden text-xs bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 px-3 py-1 rounded-lg">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Salir Admin
+                </button>
+                <div class="text-xs font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-800/60 px-3 py-1 rounded-full flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Conectado
+                </div>
             </div>
         </div>
     </nav>
 
+    <!-- Modal de PIN Maestro -->
+    <div id="modal-pin" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center">
+            <div class="w-12 h-12 rounded-full bg-teal-500/10 text-teal-400 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-1">Acceso Administrativo</h3>
+            <p class="text-xs text-slate-400 mb-4">Ingresá el PIN maestro para desbloquear las métricas.</p>
+            <input type="password" id="input-pin" maxlength="8" placeholder="****" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-center text-xl tracking-widest text-teal-300 font-mono outline-none focus:border-teal-400 mb-4">
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="cerrarModalPin()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-sm">
+                    Cancelar
+                </button>
+                <button onclick="verificarPin()" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black py-2.5 rounded-xl text-sm shadow-lg shadow-teal-500/20">
+                    Ingresar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Contenedor Principal -->
     <main class="max-w-7xl mx-auto p-4 md:p-6 flex-1 w-full">
 
-        <!-- VISTA 1: CARGA DE TAREAS -->
+        <!-- VISTA 1: CARGA DE TAREAS (PÚBLICA PARA EMPLEADOS) -->
         <section id="view-form" class="max-w-xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
             <div class="mb-6">
                 <h2 class="text-xl font-bold text-white flex items-center gap-2">
                     <i class="fas fa-clipboard-list text-teal-400"></i> Registrar Bloque de Trabajo
                 </h2>
-                <p class="text-xs text-slate-400 mt-1">Carga rápida para técnicos en estación o móvil.</p>
+                <p class="text-xs text-slate-400 mt-1">Completá los campos al finalizar cada bloque o diseño.</p>
             </div>
 
             <form id="task-form" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Técnico Responsable</label>
-                        <select id="tecnico" required class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none">
+                        <select id="tecnico" required class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none font-medium">
                             <option value="">Seleccionar empleado...</option>
                             <option value="Sebastián">Sebastián</option>
                             <option value="Martín">Martín</option>
@@ -67,7 +94,7 @@
                             <option value="Digital">Digital / CAD-CAM</option>
                             <option value="Analógico">Analógico / Yeso</option>
                             <option value="Terminación">Terminación / Cerámica</option>
-                            <option value="Administración">Administración</option>
+                            <option value="Administración">Administración / Recepción</option>
                         </select>
                     </div>
                 </div>
@@ -75,7 +102,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Tipo de Tarea</label>
-                        <select id="tarea" required class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none">
+                        <select id="tarea" required class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none font-medium">
                             <option value="Diseño">Diseño CAD</option>
                             <option value="Fresado / Impresión">Fresado / Impresión 3D</option>
                             <option value="Coordinación Odontólogos">Coordinación Odontólogos</option>
@@ -87,7 +114,7 @@
 
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Cliente / Odontólogo</label>
-                        <input type="text" id="cliente" placeholder="Ej: Dr. Pérez / Caso #104" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none">
+                        <input type="text" id="cliente" placeholder="Ej: Dr. Pérez / Clínica Dental" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none">
                     </div>
                 </div>
 
@@ -101,50 +128,50 @@
                         <input type="time" id="hora-salida" required onchange="actualizarDuracion()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-sm outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Duración (Min)</label>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Minutos</label>
                         <input type="number" id="tiempo-minutos" min="1" required class="w-full bg-slate-900 border border-teal-500/50 text-teal-300 font-bold rounded-lg p-2 text-sm outline-none">
                     </div>
                 </div>
 
                 <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-3">
-                    <label class="block text-xs font-bold uppercase text-slate-400">Estado de la Orden</label>
+                    <label class="block text-xs font-bold uppercase text-slate-400">Estado del Caso</label>
                     <div class="grid grid-cols-2 gap-3">
-                        <label class="flex items-center gap-2 p-3 bg-slate-900 rounded-lg border border-slate-700 cursor-pointer text-sm">
+                        <label class="flex items-center gap-2 p-3 bg-slate-900 rounded-lg border border-slate-700 cursor-pointer text-sm font-medium">
                             <input type="radio" name="orden_completa" value="true" checked onchange="toggleMotivoFriccion(false)" class="text-teal-500">
-                            <span>Completa (Fluida)</span>
+                            <span>Completa (Sin trabas)</span>
                         </label>
-                        <label class="flex items-center gap-2 p-3 bg-slate-900 rounded-lg border border-slate-700 cursor-pointer text-sm">
+                        <label class="flex items-center gap-2 p-3 bg-slate-900 rounded-lg border border-slate-700 cursor-pointer text-sm font-medium">
                             <input type="radio" name="orden_completa" value="false" onchange="toggleMotivoFriccion(true)" class="text-rose-500">
                             <span class="text-rose-300">Incompleta (Fricción)</span>
                         </label>
                     </div>
 
                     <div id="box-motivo-friccion" class="hidden">
-                        <label class="block text-xs font-bold uppercase text-rose-400 mb-1">Motivo de la Fricción</label>
+                        <label class="block text-xs font-bold uppercase text-rose-400 mb-1">Motivo de la Demora / Fricción</label>
                         <select id="motivo-friccion" class="w-full bg-slate-900 border border-rose-900 rounded-xl p-3 text-white text-sm outline-none">
-                            <option value="Falta color / foto">Falta color o foto</option>
-                            <option value="Escaneo borroso / Defectuoso">Escaneo borroso / Defectuoso</option>
-                            <option value="Indicación clínica ambigua">Indicación clínica ambigua</option>
-                            <option value="Cambio de plan sobre la marcha">Cambio de plan sobre la marcha</option>
+                            <option value="Falta color / foto">Falta color o foto clínica</option>
+                            <option value="Escaneo borroso / Defectuoso">Escaneo borroso / Impresión defectuosa</option>
+                            <option value="Indicación clínica ambigua">Indicación clínica incompleta/ambigua</option>
+                            <option value="Cambio de plan sobre la marcha">Cambio de plan por el odontólogo</option>
+                            <option value="Problema técnico / Maquinaria">Problema técnico / Fallo de máquina</option>
                             <option value="Otro">Otro motivo</option>
                         </select>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Observaciones Adicionales</label>
-                    <textarea id="notas" rows="2" placeholder="Detalles del caso, vía de contacto o incidencias..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm outline-none focus:border-teal-400"></textarea>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Observaciones / Notas</label>
+                    <textarea id="notas" rows="2" placeholder="Detalles de la comunicación, vía de contacto (WhatsApp/Llamada)..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm outline-none focus:border-teal-400"></textarea>
                 </div>
 
                 <button type="submit" id="btn-guardar" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black py-3.5 rounded-xl transition duration-150 shadow-lg shadow-teal-500/20 text-base">
-                    Guardar Registro
+                    Guardar Tarea
                 </button>
             </form>
         </section>
 
-        <!-- VISTA 2: ANALÍTICAS Y DIAGNÓSTICO -->
+        <!-- VISTA 2: ANALÍTICAS Y DIAGNÓSTICO (ADMIN) -->
         <section id="view-analytics" class="hidden space-y-6">
-            <!-- KPIs Superiores -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Horas Productivas</span>
@@ -159,7 +186,7 @@
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tiempo Perdido</span>
                     <p id="kpi-tiempo-perdido" class="text-3xl font-black text-amber-400 mt-1">0.0 h</p>
-                    <span class="text-xs text-amber-500/80">Dedicado a trabas/recontactos</span>
+                    <span class="text-xs text-amber-500/80">Horas en reprocesos y llamadas</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Promedio por Tarea</span>
@@ -168,37 +195,30 @@
                 </div>
             </div>
 
-            <!-- Gráficos y Tablas de Rendimiento -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Rendimiento por Técnico -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow">
                     <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
                         <i class="fas fa-users text-teal-400"></i> Rendimiento por Empleado
                     </h3>
-                    <div id="analisis-tecnicos" class="space-y-4">
-                        <!-- Generado por JavaScript -->
-                    </div>
+                    <div id="analisis-tecnicos" class="space-y-4"></div>
                 </div>
 
-                <!-- Distribución por Tarea -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow">
                     <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
-                        <i class="fas fa-pie-chart text-teal-400"></i> Carga Horaria por Tarea
+                        <i class="fas fa-pie-chart text-teal-400"></i> Distribución por Tarea
                     </h3>
-                    <div id="analisis-tareas" class="space-y-3">
-                        <!-- Generado por JavaScript -->
-                    </div>
+                    <div id="analisis-tareas" class="space-y-3"></div>
                 </div>
             </div>
         </section>
 
-        <!-- VISTA 3: REGISTROS DETALLADOS Y BORRADO -->
+        <!-- VISTA 3: REGISTROS DETALLADOS Y GESTIÓN (ADMIN) -->
         <section id="view-records" class="hidden space-y-4">
             <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
                 <div class="p-4 border-b border-slate-800 flex flex-wrap justify-between items-center gap-3">
                     <div>
                         <h3 class="font-bold text-white">Historial de Tareas en Directo</h3>
-                        <p class="text-xs text-slate-400">Hacé clic en el tacho rojo para borrar registros de prueba.</p>
+                        <p class="text-xs text-slate-400">Control individual de registros cargados.</p>
                     </div>
                     <button onclick="cargarDatos()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg text-slate-300">
                         <i class="fas fa-sync-alt mr-1"></i> Refrescar
@@ -210,7 +230,7 @@
                             <tr>
                                 <th class="p-4">Técnico</th>
                                 <th class="p-4">Sector / Tarea</th>
-                                <th class="p-4">Cliente / Caso</th>
+                                <th class="p-4">Cliente / Odontólogo</th>
                                 <th class="p-4 text-center">Horario</th>
                                 <th class="p-4 text-center">Duración</th>
                                 <th class="p-4 text-center">Estado</th>
@@ -218,7 +238,7 @@
                                 <th class="p-4 text-center">Acción</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-cuerpo" class="divide-y border-slate-800"></tbody>
+                        <tbody id="tabla-cuerpo" class="divide-y divide-slate-800"></tbody>
                     </table>
                 </div>
             </div>
@@ -226,30 +246,78 @@
     </main>
 
     <script>
+        const PIN_ADMIN = '1234'; // TU PIN MAESTRO (Podés cambiarlo por el que quieras)
+
         const SUPABASE_URL = 'https://tklocrvvnpuftrhllopg.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrbG9jcnZ2bnB1ZnRyaGxsb3BnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMjE2NTcsImV4cCI6MjEwMjg5NzY1N30.HGZzc3kMaZiBV7tewzDJAYT0hPHI6IUJsEP3W_WJqTk';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let tareasLocales = [];
+        let esAdmin = false;
+        let vistaPendiente = null;
+
+        function intentarAccesoAdmin(vista) {
+            if (esAdmin) {
+                cambiarVista(vista);
+            } else {
+                vistaPendiente = vista;
+                document.getElementById('input-pin').value = '';
+                document.getElementById('modal-pin').classList.remove('hidden');
+                document.getElementById('input-pin').focus();
+            }
+        }
+
+        function cerrarModalPin() {
+            document.getElementById('modal-pin').classList.add('hidden');
+            vistaPendiente = null;
+        }
+
+        function verificarPin() {
+            const input = document.getElementById('input-pin').value;
+            if (input === PIN_ADMIN) {
+                esAdmin = true;
+                cerrarModalPin();
+                document.getElementById('lock-analytics').className = 'fas fa-unlock text-xs text-teal-400';
+                document.getElementById('lock-records').className = 'fas fa-unlock text-xs text-teal-400';
+                document.getElementById('btn-admin-logout').classList.remove('hidden');
+                cambiarVista(vistaPendiente || 'analytics');
+            } else {
+                alert('PIN incorrecto');
+                document.getElementById('input-pin').value = '';
+            }
+        }
+
+        function cerrarSesionAdmin() {
+            esAdmin = false;
+            document.getElementById('lock-analytics').className = 'fas fa-lock text-xs text-amber-400';
+            document.getElementById('lock-records').className = 'fas fa-lock text-xs text-amber-400';
+            document.getElementById('btn-admin-logout').classList.add('hidden');
+            cambiarVista('form');
+        }
 
         function cambiarVista(vista) {
+            if ((vista === 'analytics' || vista === 'records') && !esAdmin) {
+                intentarAccesoAdmin(vista);
+                return;
+            }
+
             document.getElementById('view-form').classList.add('hidden');
             document.getElementById('view-analytics').classList.add('hidden');
             document.getElementById('view-records').classList.add('hidden');
 
             document.getElementById('tab-form').className = 'px-4 py-1.5 rounded-lg text-slate-400 hover:text-white';
-            document.getElementById('tab-analytics').className = 'px-4 py-1.5 rounded-lg text-slate-400 hover:text-white';
-            document.getElementById('tab-records').className = 'px-4 py-1.5 rounded-lg text-slate-400 hover:text-white';
+            document.getElementById('tab-analytics').className = 'px-4 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5';
+            document.getElementById('tab-records').className = 'px-4 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5';
 
             if (vista === 'form') {
                 document.getElementById('view-form').classList.remove('hidden');
                 document.getElementById('tab-form').className = 'px-4 py-1.5 rounded-lg bg-teal-500 text-slate-950 shadow';
             } else if (vista === 'analytics') {
                 document.getElementById('view-analytics').classList.remove('hidden');
-                document.getElementById('tab-analytics').className = 'px-4 py-1.5 rounded-lg bg-teal-500 text-slate-950 shadow';
+                document.getElementById('tab-analytics').className = 'px-4 py-1.5 rounded-lg bg-teal-500 text-slate-950 shadow flex items-center gap-1.5';
             } else if (vista === 'records') {
                 document.getElementById('view-records').classList.remove('hidden');
-                document.getElementById('tab-records').className = 'px-4 py-1.5 rounded-lg bg-teal-500 text-slate-950 shadow';
+                document.getElementById('tab-records').className = 'px-4 py-1.5 rounded-lg bg-teal-500 text-slate-950 shadow flex items-center gap-1.5';
             }
         }
 
@@ -345,7 +413,7 @@
                     <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                         <div>
                             <p class="font-bold text-white">${nombre}</p>
-                            <p class="text-xs text-slate-400">${stat.tareas} tareas cargadas</p>
+                            <p class="text-xs text-slate-400">${stat.tareas} tareas registradas</p>
                         </div>
                         <div class="text-right">
                             <p class="font-bold text-teal-300 text-sm">${horas} h</p>
@@ -416,16 +484,23 @@
             const { error } = await supabaseClient.from('lab_tasks').insert([nuevaTarea]);
 
             btn.disabled = false;
-            btn.textContent = 'Guardar Registro';
+            btn.textContent = 'Guardar Tarea';
 
             if (!error) {
                 document.getElementById('cliente').value = '';
                 document.getElementById('notas').value = '';
                 document.getElementById('tiempo-minutos').value = '';
-                alert('Tarea guardada exitosamente');
+                document.getElementById('hora-ingreso').value = '';
+                document.getElementById('hora-salida').value = '';
+                alert('Registro guardado correctamente');
             } else {
                 alert('Error al guardar: ' + error.message);
             }
+        });
+
+        // Enter en el input de PIN
+        document.getElementById('input-pin').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') verificarPin();
         });
 
         supabaseClient
