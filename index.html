@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión Operativa</title>
+    <title>Centro Operativo y Diagnóstico</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,7 +15,7 @@
         <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <div class="w-3 h-3 rounded-full bg-teal-400 animate-pulse"></div>
-                <span class="font-black text-lg tracking-wide text-white">LAB SYSTEM</span>
+                <span class="font-black text-lg tracking-wide text-white">LAB CONTROL & AUDIT</span>
             </div>
 
             <!-- Selector de Vistas -->
@@ -38,7 +38,7 @@
                     <i class="fas fa-sign-out-alt mr-1"></i> Salir Admin
                 </button>
                 <div class="text-xs font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-800/60 px-3 py-1 rounded-full flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Conectado
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Online
                 </div>
             </div>
         </div>
@@ -51,7 +51,7 @@
                 <i class="fas fa-shield-alt"></i>
             </div>
             <h3 class="text-lg font-bold text-white mb-1">Acceso Administrativo</h3>
-            <p class="text-xs text-slate-400 mb-4">Ingresá tu PIN para desbloquear los datos.</p>
+            <p class="text-xs text-slate-400 mb-4">Ingresá tu PIN para ver los datos estratégicos.</p>
             <input type="password" id="input-pin" maxlength="8" placeholder="****" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-center text-xl tracking-widest text-teal-300 font-mono outline-none focus:border-teal-400 mb-4">
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="cerrarModalPin()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-sm">
@@ -77,7 +77,7 @@
             </div>
 
             <form id="task-form" class="space-y-4">
-                <!-- 1. Empleado que realiza la tarea -->
+                <!-- 1. Técnico -->
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-400 mb-1">1. ¿Quién realiza la tarea?</label>
                     <select id="tecnico" required class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none font-medium">
@@ -89,7 +89,7 @@
                     </select>
                 </div>
 
-                <!-- 2. Tarea que está realizando -->
+                <!-- 2. Tipo de Tarea -->
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-400 mb-1">2. ¿Qué tarea estás realizando?</label>
                     <select id="tarea" required class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm focus:border-teal-400 outline-none font-medium">
@@ -115,18 +115,18 @@
                     </select>
                 </div>
 
-                <!-- 3. Número de trabajo del día -->
+                <!-- 3. Nombre de para quién es el pedido o número de orden -->
                 <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
                     <label class="block text-xs font-bold uppercase text-teal-400 mb-1">
-                        3. Número del trabajo del día al que corresponde esta tarea
+                        3. Nombre de para quién es el pedido o número de orden
                     </label>
                     <p class="text-[11px] text-slate-400 mb-2">
-                        Ej: Indicá <strong>1</strong> si es para el 1er trabajo del día, <strong>2</strong> si es para el segundo, etc.
+                        Ingresá el nombre del odontólogo, clínica o el código/número de orden.
                     </p>
-                    <input type="number" id="job-number" min="1" max="999" placeholder="Ej: 1" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-sm font-bold focus:border-teal-400 outline-none">
+                    <input type="text" id="cliente-orden" placeholder="Ej: Dr. Gómez / Orden #408 / Clínica Belgrano" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-sm font-semibold focus:border-teal-400 outline-none">
                 </div>
 
-                <!-- 4. Horarios y Duración Calculada -->
+                <!-- 4. Horarios y Duración -->
                 <div class="grid grid-cols-3 gap-3 bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Inicio</label>
@@ -142,7 +142,7 @@
                     </div>
                 </div>
 
-                <!-- 5. ¿La orden llegó completa o le falta algo? -->
+                <!-- 5. Estado de la Orden -->
                 <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-2">
                     <label class="block text-xs font-bold uppercase text-slate-400">
                         5. ¿La orden llegó completa o le falta algo?
@@ -162,7 +162,7 @@
                 <!-- 6. Observaciones -->
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Observaciones / Notas (Opcional)</label>
-                    <textarea id="notas" rows="2" placeholder="Detalles de la orden, qué faltaba o notas del caso..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm outline-none focus:border-teal-400"></textarea>
+                    <textarea id="notas" rows="2" placeholder="Detalles de la orden, qué faltaba o especificaciones..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white text-sm outline-none focus:border-teal-400"></textarea>
                 </div>
 
                 <button type="submit" id="btn-guardar" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black py-3.5 rounded-xl transition duration-150 shadow-lg shadow-teal-500/20 text-base">
@@ -171,7 +171,7 @@
             </form>
         </section>
 
-        <!-- VISTA 2: TABLERO DE ANÁLISIS Y DIAGNÓSTICO (ADMIN) -->
+        <!-- VISTA 2: TABLERO DE ANÁLISIS AVANZADO (ADMIN) -->
         <section id="view-analytics" class="hidden space-y-6">
             
             <!-- KPIs Generales -->
@@ -179,70 +179,125 @@
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Horas Totales</span>
                     <p id="kpi-horas" class="text-3xl font-black text-white mt-1">0.0 h</p>
-                    <span class="text-xs text-slate-500">Tiempo total acumulado</span>
+                    <span class="text-xs text-slate-500">Tiempo total registrado</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
-                    <span class="text-xs font-bold text-teal-400 uppercase tracking-wider">Trabajos Únicos</span>
-                    <p id="kpi-trabajos-unicos" class="text-3xl font-black text-teal-300 mt-1">0</p>
-                    <span class="text-xs text-slate-500">Casos del día procesados</span>
+                    <span class="text-xs font-bold text-teal-400 uppercase tracking-wider">Pedidos / Clientes Únicos</span>
+                    <p id="kpi-pedidos-unicos" class="text-3xl font-black text-teal-300 mt-1">0</p>
+                    <span class="text-xs text-slate-500">Casos/Órdenes distintas</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Promedio Tareas/Trabajo</span>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Promedio Tareas/Pedido</span>
                     <p id="kpi-promedio-tareas" class="text-3xl font-black text-amber-400 mt-1">0.0</p>
-                    <span class="text-xs text-slate-500">Tareas necesarias por caso</span>
+                    <span class="text-xs text-slate-500">Bloques por trabajo</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
                     <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">Órdenes Incompletas</span>
                     <p id="kpi-incompletas" class="text-3xl font-black text-rose-400 mt-1">0%</p>
-                    <span id="kpi-incompletas-count" class="text-xs text-rose-500/80">0 casos con faltantes</span>
+                    <span id="kpi-incompletas-count" class="text-xs text-rose-500/80">0 casos incompletos</span>
                 </div>
             </div>
 
-            <!-- Gráficos y Rankings de Tareas -->
+            <!-- MATRIZ DETALLADA: TAREAS REALIZADAS POR CADA EMPLEADO -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow">
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fas fa-th-list text-teal-400"></i> Desglose de Tareas Realizadas por Técnico
+                        </h3>
+                        <p class="text-xs text-slate-400">Conteo exacto de cuántas veces realizó cada tarea cada empleado.</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-950 text-slate-400 font-bold uppercase border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Tipo de Tarea</th>
+                                <th class="p-3 text-center">Joaquín</th>
+                                <th class="p-3 text-center">Sebastián</th>
+                                <th class="p-3 text-center">Sergio</th>
+                                <th class="p-3 text-center">Sol</th>
+                                <th class="p-3 text-center font-black text-teal-400">Total Tarea</th>
+                                <th class="p-3 text-center font-black text-slate-200">Tiempo Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-matriz-cuerpo" class="divide-y divide-slate-800"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RANKINGS DE TAREAS -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Ranking 1: Tareas que más tiempo toman en promedio -->
+                <!-- Ranking 1: Tareas con Mayor Tiempo Promedio -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow">
-                    <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
-                        <i class="fas fa-hourglass-half text-teal-400"></i> Tareas con Mayor Tiempo Promedio
+                    <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+                        <i class="fas fa-hourglass-half text-teal-400"></i> Mayor Tiempo Promedio por Tarea
                     </h3>
-                    <p class="text-xs text-slate-400 mb-4">¿Cuáles son las tareas individuales que más demoran por vez?</p>
+                    <p class="text-xs text-slate-400 mb-4">¿Cuáles son las tareas que más minutos demandan por ejecución?</p>
                     <div id="analisis-tiempo-promedio" class="space-y-3"></div>
                 </div>
 
-                <!-- Ranking 2: Tareas más repetidas / frecuentes -->
+                <!-- Ranking 2: Tareas más Frecuentes / Repetidas -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow">
-                    <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
-                        <i class="fas fa-sync text-teal-400"></i> Tareas más Repetidas
+                    <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+                        <i class="fas fa-sync text-teal-400"></i> Tareas más Frecuentes
                     </h3>
-                    <p class="text-xs text-slate-400 mb-4">Volumen de ejecuciones y frecuencia por tarea.</p>
+                    <p class="text-xs text-slate-400 mb-4">Volumen total de ejecuciones por tarea.</p>
                     <div id="analisis-frecuencia" class="space-y-3"></div>
                 </div>
             </div>
 
-            <!-- Desglose por Empleado -->
+            <!-- ANÁLISIS DE CLIENTES / ODONTÓLOGOS / ÓRDENES -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Top Pedidos más Demandantes -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow">
+                    <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+                        <i class="fas fa-user-tag text-teal-400"></i> Clientes / Órdenes con Mayor Tiempo
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-4">Pedidos u odontólogos que requirieron más horas acumuladas.</p>
+                    <div id="analisis-top-clientes" class="space-y-3"></div>
+                </div>
+
+                <!-- Clientes con Órdenes Incompletas -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow">
+                    <h3 class="text-base font-bold text-rose-400 mb-1 flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle"></i> Clientes con Órdenes Incompletas
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-4">Odontólogos que enviaron órdenes con faltantes o demoras.</p>
+                    <div id="analisis-clientes-incompletos" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- RESUMEN POR TÉCNICO -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow">
                 <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
-                    <i class="fas fa-users text-teal-400"></i> Rendimiento por Empleado (Joaquín, Sebastián, Sergio, Sol)
+                    <i class="fas fa-users text-teal-400"></i> Resumen de Productividad por Empleado
                 </h3>
                 <div id="analisis-tecnicos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
             </div>
         </section>
 
-        <!-- VISTA 3: HISTORIAL DE REGISTROS AGRUPADOS (ADMIN) -->
+        <!-- VISTA 3: REGISTROS Y GESTIÓN CON BÚSQUEDA Y AGRUPACIÓN (ADMIN) -->
         <section id="view-records" class="hidden space-y-4">
             <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
                 <div class="p-4 border-b border-slate-800 flex flex-wrap justify-between items-center gap-3">
                     <div>
-                        <h3 class="font-bold text-white">Historial de Tareas por Trabajo</h3>
-                        <p class="text-xs text-slate-400">Ordenado por Número de Trabajo para facilitar el análisis del día.</p>
+                        <h3 class="font-bold text-white">Historial de Tareas y Pedidos</h3>
+                        <p class="text-xs text-slate-400">Filtra por técnico, busca por cliente o elimina tareas de prueba.</p>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input type="text" id="buscador-cliente" oninput="renderizar()" placeholder="Buscar cliente u orden..." class="bg-slate-950 border border-slate-700 text-xs text-white rounded-lg p-2 outline-none focus:border-teal-400 w-48">
                         <select id="filtro-tecnico-tabla" onchange="renderizar()" class="bg-slate-950 border border-slate-700 text-xs text-white rounded-lg p-2 outline-none">
                             <option value="Todos">Todos los técnicos</option>
                             <option value="Joaquín">Joaquín</option>
                             <option value="Sebastián">Sebastián</option>
                             <option value="Sergio">Sergio</option>
                             <option value="Sol">Sol</option>
+                        </select>
+                        <select id="filtro-estado-tabla" onchange="renderizar()" class="bg-slate-950 border border-slate-700 text-xs text-white rounded-lg p-2 outline-none">
+                            <option value="Todos">Todos los estados</option>
+                            <option value="Completa">Solo Completas</option>
+                            <option value="Incompleta">Solo Incompletas</option>
                         </select>
                         <button onclick="cargarDatos()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg text-slate-300">
                             <i class="fas fa-sync-alt mr-1"></i> Refrescar
@@ -253,7 +308,7 @@
                     <table class="w-full text-left text-sm text-slate-300">
                         <thead class="bg-slate-950 text-xs uppercase font-bold text-slate-400 border-b border-slate-800">
                             <tr>
-                                <th class="p-4 text-center">Trabajo #</th>
+                                <th class="p-4">Cliente / Orden</th>
                                 <th class="p-4">Técnico</th>
                                 <th class="p-4">Tarea Realizada</th>
                                 <th class="p-4 text-center">Horario</th>
@@ -271,11 +326,13 @@
     </main>
 
     <script>
-        const PIN_ADMIN = '1234'; // PIN MAESTRO PARA VER ANALÍTICAS Y REGISTROS
+        const PIN_ADMIN = '3008'; // CONTRASEÑA MAESTRA SOLICITADA
 
         const SUPABASE_URL = 'https://tklocrvvnpuftrhllopg.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrbG9jcnZ2bnB1ZnRyaGxsb3BnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMjE2NTcsImV4cCI6MjEwMjg5NzY1N30.HGZzc3kMaZiBV7tewzDJAYT0hPHI6IUJsEP3W_WJqTk';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const LISTA_TECNICOS = ['Joaquín', 'Sebastián', 'Sergio', 'Sol'];
 
         let tareasLocales = [];
         let esAdmin = false;
@@ -363,37 +420,39 @@
             tbody.innerHTML = '';
 
             const filtroTec = document.getElementById('filtro-tecnico-tabla')?.value || 'Todos';
+            const filtroEstado = document.getElementById('filtro-estado-tabla')?.value || 'Todos';
+            const textoBusqueda = (document.getElementById('buscador-cliente')?.value || '').toLowerCase().trim();
 
             let totalMin = 0;
             let incompletasCount = 0;
 
-            const trabajosSet = new Set();
+            const clientesMap = {};
             const tecnicosStats = {
                 'Joaquín': { minutos: 0, tareas: 0, incompletas: 0 },
                 'Sebastián': { minutos: 0, tareas: 0, incompletas: 0 },
                 'Sergio': { minutos: 0, tareas: 0, incompletas: 0 },
                 'Sol': { minutos: 0, tareas: 0, incompletas: 0 }
             };
+            const matrizTareasTecnicos = {};
             const tareasStats = {};
-
-            // Ordenar por número de trabajo y luego por fecha
-            const tareasOrdenadas = [...tareasLocales].sort((a, b) => {
-                const jobA = a.job_number || 0;
-                const jobB = b.job_number || 0;
-                return jobB - jobA; // Los números de trabajo más recientes primero
-            });
 
             tareasLocales.forEach(t => {
                 const duracion = Number(t.duration_minutes) || 0;
                 const esCompleta = t.is_complete !== false;
                 const tec = t.technician_name || 'Desconocido';
                 const tipoTarea = t.task_type || 'General';
-                const numJob = t.job_number || 1;
+                const cliente = (t.client_name || 'Sin especificar').trim();
 
                 totalMin += duracion;
-                trabajosSet.add(numJob);
-
                 if (!esCompleta) incompletasCount++;
+
+                // Agrupación por Cliente / Pedido
+                if (!clientesMap[cliente]) {
+                    clientesMap[cliente] = { minutos: 0, tareas: 0, incompletas: 0 };
+                }
+                clientesMap[cliente].minutos += duracion;
+                clientesMap[cliente].tareas += 1;
+                if (!esCompleta) clientesMap[cliente].incompletas += 1;
 
                 // Estadísticas por técnico
                 if (!tecnicosStats[tec]) tecnicosStats[tec] = { minutos: 0, tareas: 0, incompletas: 0 };
@@ -401,30 +460,46 @@
                 tecnicosStats[tec].tareas += 1;
                 if (!esCompleta) tecnicosStats[tec].incompletas += 1;
 
-                // Estadísticas por tarea
-                if (!tareasStats[tipoTarea]) {
-                    tareasStats[tipoTarea] = { totalMin: 0, cantidad: 0 };
+                // Matriz de tareas x técnico
+                if (!matrizTareasTecnicos[tipoTarea]) {
+                    matrizTareasTecnicos[tipoTarea] = {
+                        'Joaquín': 0,
+                        'Sebastián': 0,
+                        'Sergio': 0,
+                        'Sol': 0,
+                        totalTareas: 0,
+                        totalMin: 0
+                    };
                 }
+                if (matrizTareasTecnicos[tipoTarea][tec] !== undefined) {
+                    matrizTareasTecnicos[tipoTarea][tec] += 1;
+                }
+                matrizTareasTecnicos[tipoTarea].totalTareas += 1;
+                matrizTareasTecnicos[tipoTarea].totalMin += duracion;
+
+                // Estadísticas generales de la tarea
+                if (!tareasStats[tipoTarea]) tareasStats[tipoTarea] = { totalMin: 0, cantidad: 0 };
                 tareasStats[tipoTarea].totalMin += duracion;
                 tareasStats[tipoTarea].cantidad += 1;
             });
 
-            // Llenar tabla de registros
-            tareasOrdenadas.forEach(t => {
+            // Llenar tabla de registros con filtros
+            tareasLocales.forEach(t => {
                 const tec = t.technician_name || '-';
-                if (filtroTec !== 'Todos' && tec !== filtroTec) return;
-
+                const cliente = t.client_name || '-';
                 const duracion = Number(t.duration_minutes) || 0;
                 const esCompleta = t.is_complete !== false;
-                const numJob = t.job_number || 1;
+                const estadoTexto = esCompleta ? 'Completa' : 'Incompleta';
+
+                if (filtroTec !== 'Todos' && tec !== filtroTec) return;
+                if (filtroEstado !== 'Todos' && estadoTexto !== filtroEstado) return;
+                if (textoBusqueda && !cliente.toLowerCase().includes(textoBusqueda)) return;
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-800/40 transition-colors';
                 tr.innerHTML = `
-                    <td class="p-4 text-center">
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-black bg-teal-950/80 border border-teal-800/80 text-teal-300">
-                            Trabajo #${numJob}
-                        </span>
+                    <td class="p-4">
+                        <span class="font-bold text-teal-300 block text-sm">${cliente}</span>
                     </td>
                     <td class="p-4 font-bold text-white">${tec}</td>
                     <td class="p-4 font-medium text-slate-200">${t.task_type || '-'}</td>
@@ -445,19 +520,39 @@
                 tbody.appendChild(tr);
             });
 
-            // Actualizar KPIs Superiores
-            const cantTrabajos = trabajosSet.size;
+            // KPIs Superiores
+            const cantPedidosUnicos = Object.keys(clientesMap).length;
             const cantTareasTotal = tareasLocales.length;
-            const promTareasPorTrabajo = cantTrabajos > 0 ? (cantTareasTotal / cantTrabajos).toFixed(1) : '0.0';
+            const promTareasPorPedido = cantPedidosUnicos > 0 ? (cantTareasTotal / cantPedidosUnicos).toFixed(1) : '0.0';
             const pctIncompletas = cantTareasTotal > 0 ? Math.round((incompletasCount / cantTareasTotal) * 100) : 0;
 
             document.getElementById('kpi-horas').textContent = (totalMin / 60).toFixed(1) + ' h';
-            document.getElementById('kpi-trabajos-unicos').textContent = cantTrabajos;
-            document.getElementById('kpi-promedio-tareas').textContent = promTareasPorTrabajo;
+            document.getElementById('kpi-pedidos-unicos').textContent = cantPedidosUnicos;
+            document.getElementById('kpi-promedio-tareas').textContent = promTareasPorPedido;
             document.getElementById('kpi-incompletas').textContent = pctIncompletas + '%';
             document.getElementById('kpi-incompletas-count').textContent = `${incompletasCount} registros incompletos`;
 
-            // Ranking 1: Tiempo promedio por tarea (ordenado de mayor a menor duración promedio)
+            // Matriz Tareas x Técnico
+            const tbodyMatriz = document.getElementById('tabla-matriz-cuerpo');
+            tbodyMatriz.innerHTML = '';
+            const matrizOrdenada = Object.entries(matrizTareasTecnicos).sort((a, b) => b[1].totalTareas - a[1].totalTareas);
+
+            matrizOrdenada.forEach(([tarea, data]) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/30';
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-200">${tarea}</td>
+                    <td class="p-3 text-center ${data['Joaquín'] > 0 ? 'text-teal-300 font-bold bg-slate-900/50' : 'text-slate-600'}">${data['Joaquín']}</td>
+                    <td class="p-3 text-center ${data['Sebastián'] > 0 ? 'text-teal-300 font-bold bg-slate-900/50' : 'text-slate-600'}">${data['Sebastián']}</td>
+                    <td class="p-3 text-center ${data['Sergio'] > 0 ? 'text-teal-300 font-bold bg-slate-900/50' : 'text-slate-600'}">${data['Sergio']}</td>
+                    <td class="p-3 text-center ${data['Sol'] > 0 ? 'text-teal-300 font-bold bg-slate-900/50' : 'text-slate-600'}">${data['Sol']}</td>
+                    <td class="p-3 text-center font-black text-teal-400 bg-teal-950/40">${data.totalTareas}</td>
+                    <td class="p-3 text-center font-bold text-slate-300">${(data.totalMin / 60).toFixed(1)} h</td>
+                `;
+                tbodyMatriz.appendChild(tr);
+            });
+
+            // Ranking 1: Tiempo promedio por tarea
             const divPromedios = document.getElementById('analisis-tiempo-promedio');
             divPromedios.innerHTML = '';
             const arrayPromedios = Object.entries(tareasStats).map(([tarea, data]) => ({
@@ -470,18 +565,18 @@
             arrayPromedios.slice(0, 6).forEach(item => {
                 divPromedios.innerHTML += `
                     <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-slate-200 text-xs sm:text-sm">${item.tarea}</p>
-                            <p class="text-[11px] text-slate-400">${item.cantidad} veces ejecutada (${(item.totalMin/60).toFixed(1)} h totales)</p>
+                        <div class="truncate mr-2">
+                            <p class="font-bold text-slate-200 text-xs sm:text-sm truncate">${item.tarea}</p>
+                            <p class="text-[11px] text-slate-400">${item.cantidad} veces (${(item.totalMin/60).toFixed(1)} h totales)</p>
                         </div>
-                        <span class="text-xs sm:text-sm font-black px-3 py-1 rounded-lg bg-teal-950/80 text-teal-300 border border-teal-800">
+                        <span class="text-xs sm:text-sm font-black px-3 py-1 rounded-lg bg-teal-950/80 text-teal-300 border border-teal-800 shrink-0">
                             ${item.promedio} min prom.
                         </span>
                     </div>
                 `;
             });
 
-            // Ranking 2: Tareas más frecuentes / repetidas
+            // Ranking 2: Tareas más Frecuentes
             const divFrecuencia = document.getElementById('analisis-frecuencia');
             divFrecuencia.innerHTML = '';
             const arrayFrecuencia = [...arrayPromedios].sort((a, b) => b.cantidad - a.cantidad);
@@ -501,10 +596,53 @@
                 `;
             });
 
-            // Desglose por Empleado (Joaquín, Sebastián, Sergio, Sol)
+            // Top Clientes por Tiempo Acumulado
+            const divTopClientes = document.getElementById('analisis-top-clientes');
+            divTopClientes.innerHTML = '';
+            const clientesOrdenados = Object.entries(clientesMap).sort((a, b) => b[1].minutos - a[1].minutos);
+
+            clientesOrdenados.slice(0, 5).forEach(([cliente, stat]) => {
+                divTopClientes.innerHTML += `
+                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <div class="truncate mr-2">
+                            <p class="font-bold text-white text-xs sm:text-sm truncate">${cliente}</p>
+                            <p class="text-[11px] text-slate-400">${stat.tareas} tareas realizadas</p>
+                        </div>
+                        <span class="text-xs sm:text-sm font-black px-2.5 py-1 rounded-lg bg-slate-900 text-teal-300 border border-slate-700 shrink-0">
+                            ${(stat.minutos / 60).toFixed(1)} h
+                        </span>
+                    </div>
+                `;
+            });
+
+            // Clientes con Órdenes Incompletas
+            const divClientesIncompletos = document.getElementById('analisis-clientes-incompletos');
+            divClientesIncompletos.innerHTML = '';
+            const clientesConFriccion = clientesOrdenados.filter(([_, stat]) => stat.incompletas > 0).sort((a, b) => b[1].incompletas - a[1].incompletas);
+
+            if (clientesConFriccion.length === 0) {
+                divClientesIncompletos.innerHTML = '<p class="text-xs text-slate-500 py-2">No se han registrado órdenes incompletas.</p>';
+            } else {
+                clientesConFriccion.slice(0, 5).forEach(([cliente, stat]) => {
+                    const pctFricc = Math.round((stat.incompletas / stat.tareas) * 100);
+                    divClientesIncompletos.innerHTML += `
+                        <div class="p-3 bg-slate-950 rounded-xl border border-rose-950/60 flex justify-between items-center">
+                            <div class="truncate mr-2">
+                                <p class="font-bold text-rose-300 text-xs sm:text-sm truncate">${cliente}</p>
+                                <p class="text-[11px] text-slate-400">${stat.incompletas} de ${stat.tareas} tareas fueron incompletas</p>
+                            </div>
+                            <span class="text-xs font-black px-2.5 py-1 rounded-lg bg-rose-950/80 text-rose-300 border border-rose-800 shrink-0">
+                                ${pctFricc}% falla
+                            </span>
+                        </div>
+                    `;
+                });
+            }
+
+            // Resumen por Empleado
             const divTecnicos = document.getElementById('analisis-tecnicos');
             divTecnicos.innerHTML = '';
-            ['Joaquín', 'Sebastián', 'Sergio', 'Sol'].forEach(nombre => {
+            LISTA_TECNICOS.forEach(nombre => {
                 const stat = tecnicosStats[nombre] || { minutos: 0, tareas: 0, incompletas: 0 };
                 const horas = (stat.minutos / 60).toFixed(1);
                 divTecnicos.innerHTML += `
@@ -552,7 +690,7 @@
             const nuevaTarea = {
                 technician_name: document.getElementById('tecnico').value,
                 task_type: document.getElementById('tarea').value,
-                job_number: parseInt(document.getElementById('job-number').value, 10) || 1,
+                client_name: document.getElementById('cliente-orden').value.trim(),
                 start_time: document.getElementById('hora-ingreso').value,
                 end_time: document.getElementById('hora-salida').value,
                 duration_minutes: parseInt(document.getElementById('tiempo-minutos').value, 10) || 0,
@@ -566,6 +704,7 @@
             btn.textContent = 'Guardar Tarea';
 
             if (!error) {
+                document.getElementById('cliente-orden').value = '';
                 document.getElementById('notas').value = '';
                 document.getElementById('tiempo-minutos').value = '';
                 document.getElementById('hora-ingreso').value = '';
